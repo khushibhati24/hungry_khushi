@@ -17,7 +17,3 @@ def restaurant():
 @app.route('/ngo')
 def ngo():
     return render_template('ngo.html')  # NGO dashboard page
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
