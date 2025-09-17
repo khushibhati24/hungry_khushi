@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login | Smart Food Donation</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+  <!-- Firebase App (core) SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <!-- Firebase Auth SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <!-- Firebase Firestore SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <div class="auth-container">
+    <h2>Welcome Back 👋</h2>
+    <p class="subtitle">Login to continue</p>
+
+    <form id="loginForm">
+      <div class="input-group">
+        <input type="email" id="email" name="email" placeholder=" " required>
+        <label for="email">Email</label>
+      </div>
+
+      <div class="input-group password-wrapper">
+        <input type="password" id="password" name="password" placeholder=" " required>
+        <label for="password">Password</label>
+        <span class="toggle-password" onclick="togglePassword()">👁️</span>
+      </div>
+
+      <button type="submit">Login</button>
+    </form>
+
+    <div class="message" id="loginMessage"></div>
+
+    <p class="signup-text">
+      Don’t have an account? <a href="/signup">Sign up</a>
+    </p>
+  </div>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBoC0_vjXNiMELhJ1v6pSKHWhyp1gkuwis",
+      authDomain: "hungry-khushi2.firebaseapp.com",
+      projectId: "hungry-khushi2",
+      storageBucket: "hungry-khushi2.appspot.com",
+      messagingSenderId: "36442459641",
+      appId: "1:36442459641:web:97dcc7914f03bab1438128"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Password toggle
+    function togglePassword() {
+      const passField = document.getElementById("password");
+      passField.type = passField.type === "password" ? "text" : "password";
+    }
+
+    // Login form submission
+    const loginForm = document.getElementById("loginForm");
+    const loginMessage = document.getElementById("loginMessage");
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      loginMessage.style.display = "none";
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const uid = userCredential.user.uid;
+
+        // Fetch account type from Firestore
+        const doc = await db.collection("users").doc(uid).get();
+        if (doc.exists) {
+          const accountType = doc.data().role; // make sure 'role' is stored in Firestore
+          loginMessage.textContent = "✅ Login successful!";
+          loginMessage.className = "message success";
+          loginMessage.style.display = "block";
+
+          // Redirect based on account type
+          if (accountType === "ngo") {
+            window.location.href = "http://localhost:5000/ngo";
+          } else if (accountType === "restaurant") {
+            window.location.href = "http://localhost:5000/restaurant";
+          } else {
+            window.location.href = "http://localhost:5000";
+          }
+        } else {
+          loginMessage.textContent = "❌ No user data found!";
+          loginMessage.className = "message error";
+          loginMessage.style.display = "block";
+        }
+      } catch (error) {
+        loginMessage.textContent = error.message;
+        loginMessage.className = "message error";
+        loginMessage.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>

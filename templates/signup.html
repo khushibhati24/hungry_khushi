@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Signup | Smart Food Donation</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+  <!-- Firebase App (core) SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <!-- Firebase Auth SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <!-- Firebase Firestore SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <div class="auth-container">
+    <h2>Create Account ✨</h2>
+    <p class="subtitle">Join Smart Food Donation</p>
+
+    <form id="signupForm">
+      <div class="input-group">
+        <input type="text" id="name" name="name" placeholder=" " required>
+        <label for="name">Full Name</label>
+      </div>
+
+      <div class="input-group">
+        <input type="email" id="email" name="email" placeholder=" " required>
+        <label for="email">Email</label>
+      </div>
+
+      <div class="input-group">
+        <input type="text" id="location" name="location" placeholder=" " required>
+        <label for="location">Location</label>
+      </div>
+
+      <!-- ✅ Optional Full Address field -->
+      <div class="input-group">
+        <input type="text" id="full_address" name="full_address" placeholder=" ">
+        <label for="full_address">Full Address (optional)</label>
+      </div>
+
+      <div class="input-group">
+        <select id="role" name="role" required>
+          <option value="" disabled selected>Select role</option>
+          <option value="restaurant">Restaurant</option>
+          <option value="ngo">NGO</option>
+        </select>
+        <label for="role">Role</label>
+      </div>
+
+      <div class="input-group password-wrapper">
+        <input type="password" id="password" name="password" placeholder=" " required>
+        <label for="password">Password</label>
+        <span class="toggle-password" onclick="togglePassword('password')">👁️</span>
+      </div>
+
+      <div class="input-group password-wrapper">
+        <input type="password" id="confirm_password" name="confirm_password" placeholder=" " required>
+        <label for="confirm_password">Confirm Password</label>
+        <span class="toggle-password" onclick="togglePassword('confirm_password')">👁️</span>
+      </div>
+
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <div class="message" id="signupMessage"></div>
+
+    <p class="signup-text">
+      Already have an account? <a href="/">Login</a>
+    </p>
+  </div>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBoC0_vjXNiMELhJ1v6pSKHWhyp1gkuwis",
+      authDomain: "hungry-khushi2.firebaseapp.com",
+      projectId: "hungry-khushi2",
+      storageBucket: "hungry-khushi2.appspot.com",
+      messagingSenderId: "36442459641",
+      appId: "1:36442459641:web:97dcc7914f03bab1438128"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Toggle password visibility
+    function togglePassword(fieldId) {
+      const passField = document.getElementById(fieldId);
+      passField.type = passField.type === "password" ? "text" : "password";
+    }
+
+    // Signup form submission
+    const signupForm = document.getElementById("signupForm");
+    const signupMessage = document.getElementById("signupMessage");
+
+    signupForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      signupMessage.style.display = "none";
+
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const location = document.getElementById("location").value.trim();
+      const fullAddress = document.getElementById("full_address").value.trim();
+      const role = document.getElementById("role").value;
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirm_password").value;
+
+      if (password !== confirmPassword) {
+        signupMessage.textContent = "❌ Passwords do not match!";
+        signupMessage.className = "message error";
+        signupMessage.style.display = "block";
+        return;
+      }
+
+      try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const uid = userCredential.user.uid;
+
+        // Save user data in Firestore
+        const userData = {
+          name: name,
+          email: email,
+          location: location,
+          role: role
+        };
+
+        // only add full address if provided
+        if (fullAddress) {
+          userData.full_address = fullAddress;
+        }
+
+        await db.collection("users").doc(uid).set(userData);
+
+        signupMessage.textContent = "✅ Account created successfully!";
+        signupMessage.className = "message success";
+        signupMessage.style.display = "block";
+
+        // Redirect to main page
+        setTimeout(() => {
+          window.location.href = "http://localhost:5000";
+        }, 1500);
+      } catch (error) {
+        signupMessage.textContent = error.message;
+        signupMessage.className = "message error";
+        signupMessage.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>

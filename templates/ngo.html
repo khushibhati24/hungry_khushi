@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NGO Dashboard | Smart Food Donation</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    .box {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      margin-bottom: 20px;
+    }
+    h2 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+    .donation-list {
+      margin-top: 20px;
+    }
+    .donation-item {
+      padding: 14px 18px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      background: #f9f9f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .donation-item strong {
+      color: #27ae60;
+    }
+    .book-btn {
+      padding: 8px 14px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .book-btn:hover {
+      background-color: #0056b3;
+    }
+    .empty-message {
+      text-align: center;
+      color: #888;
+      font-style: italic;
+      margin-top: 20px;
+    }
+    #locationInput {
+      padding: 8px 12px;
+      width: 60%;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-right: 10px;
+    }
+    #changeLocationBtn {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      background-color: #27ae60;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #changeLocationBtn:hover {
+      background-color: #1e8449;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Location Selector Box -->
+    <div class="box">
+      <h2>Filter Donations by Location 📍</h2>
+      <input type="text" id="locationInput" placeholder="Enter location (e.g., Delhi)" />
+      <button id="changeLocationBtn">🔍 Search</button>
+    </div>
+
+    <!-- Donations Box -->
+    <div class="box">
+      <h2>All Donations from Restaurants</h2>
+      <div class="donation-list" id="donationsContainer"></div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBoC0_vjXNiMELhJ1v6pSKHWhyp1gkuwis",
+      authDomain: "hungry-khushi2.firebaseapp.com",
+      projectId: "hungry-khushi2",
+      storageBucket: "hungry-khushi2.appspot.com",
+      messagingSenderId: "36442459641",
+      appId: "1:36442459641:web:97dcc7914f03bab1438128"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    let currentLocation = null;
+
+    // Ensure NGO is logged in
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        window.location.href = "/login";
+      } else {
+        const userDoc = await db.collection("users").doc(user.uid).get();
+        if (userDoc.exists) {
+          currentLocation = userDoc.data().location || null;
+          if (currentLocation) {
+            document.getElementById("locationInput").value = currentLocation;
+            loadDonations(user.uid, currentLocation);
+          } else {
+            alert("Your location is not set. Please update your profile.");
+          }
+        }
+      }
+    });
+
+    // Change location button
+    document.getElementById("changeLocationBtn").addEventListener("click", () => {
+      const newLocation = document.getElementById("locationInput").value.trim();
+      if (newLocation) {
+        currentLocation = newLocation;
+        loadDonations(auth.currentUser.uid, currentLocation);
+      }
+    });
+
+    let unsubscribeDonations = null;
+
+function loadDonations(ngoId, location) {
+  const container = document.getElementById("donationsContainer");
+
+  // Detach previous listener
+  if (unsubscribeDonations) unsubscribeDonations();
+
+  unsubscribeDonations = db.collection("donations")
+    .where("location", "==", location)
+    .orderBy("timestamp", "desc")
+    .onSnapshot(async (snapshot) => {
+      container.innerHTML = "";
+
+      if (snapshot.empty) {
+        container.innerHTML = "<p class='empty-message'>No donations available in this area.</p>";
+        return;
+      }
+
+      for (const doc of snapshot.docs) {
+        const donation = doc.data();
+        if (donation.bookedBy && donation.bookedBy !== ngoId) continue;
+
+        let restaurantName = donation.name || "Restaurant";
+        if (donation.userId) {
+          const userDoc = await db.collection("users").doc(donation.userId).get();
+          if (userDoc.exists) restaurantName = userDoc.data().name;
+        }
+
+        const item = document.createElement("div");
+        item.className = "donation-item";
+
+        const info = document.createElement("div");
+        info.innerHTML = `
+          <strong>${restaurantName}</strong> donated 
+          <em>${donation.quantity}</em> servings of <em>${donation.food}</em>
+          <br><small>📍 ${donation.location}</small>
+        `;
+
+        const button = document.createElement("button");
+        button.className = "book-btn";
+
+        if (donation.bookedBy === ngoId) {
+          button.textContent = "✅ Booked";
+          button.disabled = true;
+        } else {
+          button.textContent = "Book Donation";
+          button.addEventListener("click", () => {
+            db.collection("donations").doc(doc.id).update({ bookedBy: ngoId });
+          });
+        }
+
+        item.appendChild(info);
+        item.appendChild(button);
+        container.appendChild(item);
+      }
+    });
+}
+
+  </script>
+</body>
+</html>

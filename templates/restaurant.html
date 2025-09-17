@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Food Donation - Restaurant</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <style>
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+    .box {
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      background: #fff;
+    }
+    .donation-form-section {
+      flex: 1;
+    }
+    .previous-donations-section {
+      flex: 2;
+    }
+    #previousDonationsContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .donation-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f5f5f5;
+      padding: 12px 16px;
+      border-radius: 8px;
+    }
+    .donation-item strong {
+      color: #333;
+    }
+    button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button[type="submit"] {
+      background: #4CAF50;
+      color: white;
+    }
+    .delete-btn {
+      background: #e74c3c;
+      color: white;
+    }
+    .message {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .success {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- Donation Form Box -->
+    <div class="box donation-form-section">
+      <h2>Donate Food 🍲</h2>
+      <form id="donationForm">
+        <input type="text" id="restaurantName" name="name" placeholder="Your Name" required readonly />
+        <input type="text" name="food" placeholder="Type of Food" required />
+        <input type="number" name="quantity" placeholder="Quantity (servings)" min="1" required />
+        <button type="submit">Donate</button>
+      </form>
+      <div class="message" id="responseMessage"></div>
+    </div>
+
+    <!-- Previous Donations Box -->
+    <div class="box previous-donations-section">
+      <h2>Previous Donations 📋</h2>
+      <div id="previousDonationsContainer"></div>
+    </div>
+
+  </div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBoC0_vjXNiMELhJ1v6pSKHWhyp1gkuwis",
+    authDomain: "hungry-khushi2.firebaseapp.com",
+    projectId: "hungry-khushi2",
+    storageBucket: "hungry-khushi2.appspot.com",
+    messagingSenderId: "36442459641",
+    appId: "1:36442459641:web:97dcc7914f03bab1438128"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  const restaurantNameInput = document.getElementById('restaurantName');
+
+  // Ensure user is logged in and fetch name
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      db.collection("users").doc(user.uid).get().then(doc => {
+        if (doc.exists) {
+          restaurantNameInput.value = doc.data().name;
+          loadPreviousDonations(user.uid);
+        } else {
+          console.error("No user data found!");
+        }
+      }).catch(err => console.error(err));
+    } else {
+      window.location.href = "/login";
+    }
+  });
+
+  // ✅ Donation submission (with location embedded)
+  document.getElementById('donationForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+      // get restaurant user profile
+      const userDoc = await db.collection("users").doc(user.uid).get();
+      if (!userDoc.exists) {
+        console.error("User profile not found!");
+        return;
+      }
+
+      const userData = userDoc.data();
+
+      const name = this.name.value.trim();
+      const food = this.food.value.trim();
+      const quantity = Number(this.quantity.value);
+
+      await db.collection("donations").add({
+        name: name,
+        food: food,
+        quantity: quantity,
+        location: userData.location,   // ✅ embed location here
+        timestamp: new Date(),
+        userId: user.uid
+      });
+
+      document.getElementById('responseMessage').textContent = "✅ Donation recorded!";
+      document.getElementById('responseMessage').className = "message success";
+      this.reset();
+      restaurantNameInput.value = name;
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
+  // Load previous donations of logged-in restaurant
+  function loadPreviousDonations(userId) {
+    db.collection("donations")
+      .where("userId", "==", userId)
+      .orderBy("timestamp", "desc")
+      .onSnapshot(snapshot => {
+        const container = document.getElementById("previousDonationsContainer");
+        container.innerHTML = "";
+        if (snapshot.empty) {
+          container.innerHTML = "<p>No previous donations found.</p>";
+          return;
+        }
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const item = document.createElement("div");
+          item.className = "donation-item";
+          item.innerHTML = `
+            <div>
+              <strong>${data.food}</strong> - ${data.quantity} servings
+              <br><small>${data.timestamp.toDate().toLocaleString()}</small>
+              <br><em>📍 ${data.location || "No location"}</em>
+            </div>
+            <button class="delete-btn" onclick="deleteDonation('${doc.id}')">🗑️ Delete</button>
+          `;
+          container.appendChild(item);
+        });
+      });
+  }
+
+  // Delete donation
+  function deleteDonation(docId) {
+    db.collection("donations").doc(docId).delete().catch(err => console.error(err));
+  }
+</script>
+</body>
+</html>
