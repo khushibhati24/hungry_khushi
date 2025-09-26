@@ -80,7 +80,8 @@ body::after {
   margin-bottom: 20px;
 }
 
-.input-group input {
+.input-group input,
+.input-group select {
   width: 100%;
   padding: 14px 18px;
   border-radius: 10px;
@@ -103,19 +104,23 @@ body::after {
 }
 
 .input-group input:focus,
-.input-group input:not(:placeholder-shown) {
-  border-color: #27ae60;
-  box-shadow: 0 0 8px rgba(39, 174, 96, 0.4);
+.input-group input:not(:placeholder-shown),
+.input-group select:focus,
+.input-group select:not([value=""]) {
+  border-color: rgba(108, 99, 255, 0.95);
+  box-shadow: 0 0 8px rgba(108, 99, 255, 0.3);
 }
 
 .input-group input:focus + label,
-.input-group input:not(:placeholder-shown) + label {
+.input-group input:not(:placeholder-shown) + label,
+.input-group select:focus + label,
+.input-group select:not([value=""]) + label {
   top: -8px;
   left: 12px;
   font-size: 0.8rem;
   background: #fff;
   padding: 0 5px;
-  color: #27ae60;
+  color: rgba(108, 99, 255, 0.95);
   border-radius: 4px;
 }
 
@@ -132,20 +137,20 @@ body::after {
 /* Buttons */
 button {
   padding: 14px 18px;
-  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  background: rgba(108, 99, 255, 0.95); /* homepage color */
   border: none;
   border-radius: 10px;
   font-size: 1.1rem;
   color: white;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 6px 15px rgba(39, 174, 96, 0.5);
+  box-shadow: 0 6px 15px rgba(108, 99, 255, 0.5);
   transition: all 0.3s ease;
 }
 
 button:hover {
-  background: linear-gradient(135deg, #2ecc71, #27ae60);
-  box-shadow: 0 8px 20px rgba(39, 174, 96, 0.7);
+  background: rgba(84, 77, 217, 0.95); /* slightly darker on hover */
+  box-shadow: 0 8px 20px rgba(84, 77, 217, 0.7);
 }
 
 button:active {
@@ -160,7 +165,7 @@ button:active {
 }
 
 .signup-text a {
-  color: #27ae60;
+  color: rgba(108, 99, 255, 0.95); /* homepage color */
   text-decoration: none;
   font-weight: 600;
 }

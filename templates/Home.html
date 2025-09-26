@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Food Donation - Home</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+      height: 100%;
+      background: url('your-background.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #333;
+    }
+
+    /* Navbar */
+    .navbar {
+      width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 2rem;
+      background-color: rgba(108, 99, 255, 0.95);
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .navbar h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    .navbar .nav-buttons button {
+      margin-left: 12px;
+      padding: 8px 18px;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background: #fff;
+      color: #6c63ff;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .navbar .nav-buttons button:hover {
+      background: #f0f0f0;
+    }
+
+    /* Main container */
+    .main-container {
+      margin-top: 100px; /* space for navbar */
+      display: flex;
+      flex-direction: column;
+      gap: 100px;
+      max-width: 1100px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 0 20px;
+    }
+
+    /* Hero Section */
+    .hero {
+      background: rgba(255,255,255,0.95);
+      padding: 80px 50px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .hero h2 {
+      margin-top: 0;
+      font-size: 2.8rem;
+      color: #6c63ff;
+      line-height: 1.2;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      margin-top: 15px;
+      color: #555;
+      line-height: 1.6;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero button {
+      margin-top: 25px;
+      padding: 14px 32px;
+      font-size: 1.1rem;
+      border-radius: 10px;
+      border: none;
+      background: #6c63ff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .hero button:hover {
+      transform: scale(1.05);
+      background: #5848c2;
+    }
+
+    /* Services Section */
+    .services {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+    }
+
+    .service-box {
+      background: rgba(255,255,255,0.95);
+      padding: 25px;
+      border-radius: 15px;
+      width: 300px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      transition: 0.3s;
+    }
+
+    .service-box:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    }
+
+    .service-box h3 {
+      margin-top: 0;
+      font-size: 1.5rem;
+      color: #6c63ff;
+      margin-bottom: 12px;
+    }
+
+    .service-box p {
+      font-size: 1rem;
+      color: #555;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <h1>Smart Food Donation</h1>
+    <div class="nav-buttons">
+      <button onclick="window.location.href='/login'">Login</button>
+      <button onclick="window.location.href='/signup'">Sign Up</button>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <!-- Hero Section -->
+    <div class="hero">
+      <h2>Welcome to Smart Food Donation 🍲</h2>
+      <p>Connecting restaurants and NGOs to reduce food waste and help those in need.  
+         Donate, track, and make a real impact in your community.</p>
+      <button onclick="window.location.href='/signup'">Get Started</button>
+    </div>
+
+    <!-- Services Section -->
+    <div class="services">
+      <div class="service-box">
+        <h3>Food Donations</h3>
+        <p>Restaurants can easily donate surplus food to registered NGOs in their area.</p>
+      </div>
+      <div class="service-box">
+        <h3>NGO Assistance</h3>
+        <p>NGOs can track available donations and book food to distribute to people in need.</p>
+      </div>
+      <div class="service-box">
+        <h3>Impact Tracking</h3>
+        <p>Keep track of all donations and see the difference you’re making in your community.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

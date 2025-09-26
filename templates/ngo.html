@@ -1,113 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>NGO Dashboard | Smart Food Donation</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f9;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 900px;
-      margin: auto;
-    }
-    .box {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      margin-bottom: 20px;
-    }
-    h2 {
-      margin-top: 0;
-      color: #2c3e50;
-    }
-    .donation-list {
-      margin-top: 20px;
-    }
-    .donation-item {
-      padding: 14px 18px;
-      border-radius: 10px;
-      margin-bottom: 12px;
-      background: #f9f9f9;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .donation-item strong {
-      color: #27ae60;
-    }
-    .book-btn {
-      padding: 8px 14px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .book-btn:hover {
-      background-color: #0056b3;
-    }
-    .empty-message {
-      text-align: center;
-      color: #888;
-      font-style: italic;
-      margin-top: 20px;
-    }
-    #locationInput {
-      padding: 8px 12px;
-      width: 60%;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      margin-right: 10px;
-    }
-    #changeLocationBtn {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 6px;
-      background-color: #27ae60;
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    #changeLocationBtn:hover {
-      background-color: #1e8449;
-    }
-  </style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    height: 100%;
+    background: url('your-background.jpg') no-repeat center center fixed;
+    background-size: cover;
+  }
+
+  .navbar {
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1.5rem;
+    background-color: rgba(108, 99, 255, 0.9);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .navbar h1 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .navbar button {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    background: #fff;
+    color: #6c63ff;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .main-container {
+    max-width: 900px;
+    margin: 80px auto 40px auto; /* leave space for navbar */
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .box {
+    background: rgba(255,255,255,0.95);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  h2 {
+    margin-top: 0;
+    color: #2c3e50;
+  }
+
+  .donation-list {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .donation-item {
+    padding: 14px 18px;
+    border-radius: 10px;
+    background: #f9f9f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* fix overlap on small screens */
+    gap: 10px;
+  }
+
+  .donation-item div {
+    flex: 1 1 auto;
+    min-width: 200px; /* prevent text from shrinking too much */
+  }
+
+  .donation-item strong {
+    color: #27ae60;
+  }
+
+  .book-btn {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    background-color:  rgba(62, 52, 235, 0.9);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  .book-btn:hover {
+    background-color: rgba(62, 52, 235, 0.9);
+  }
+
+  .empty-message {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    margin-top: 20px;
+  }
+
+  #locationInput {
+    padding: 8px 12px;
+    width: 60%;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-right: 10px;
+  }
+
+  #changeLocationBtn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    background-color: rgba(108, 99, 255, 0.9);
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  #changeLocationBtn:hover {
+    background-color: rgba(62, 52, 235, 0.9);
+  }
+</style>
+
 </head>
 <body>
-  <div class="container">
+  <div class="navbar">
+    <h1>Smart Food Donation - NGO</h1>
+    <button id="logoutBtn">Logout</button>
+  </div>
 
-    <!-- Location Selector Box -->
+  <div class="main-container">
+    <!-- Location Selector -->
     <div class="box">
       <h2>Filter Donations by Location 📍</h2>
       <input type="text" id="locationInput" placeholder="Enter location (e.g., Delhi)" />
       <button id="changeLocationBtn">🔍 Search</button>
     </div>
 
-    <!-- Donations Box -->
+    <!-- Donations List -->
     <div class="box">
       <h2>All Donations from Restaurants</h2>
       <div class="donation-list" id="donationsContainer"></div>
     </div>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBoC0_vjXNiMELhJ1v6pSKHWhyp1gkuwis",
       authDomain: "hungry-khushi2.firebaseapp.com",
       projectId: "hungry-khushi2",
-      storageBucket: "hungry-khushi2.appspot.com",
+      storageBucket: "hungry-khushi2.firebasestorage.app",
       messagingSenderId: "36442459641",
       appId: "1:36442459641:web:97dcc7914f03bab1438128"
     };
@@ -117,6 +180,12 @@
     const auth = firebase.auth();
 
     let currentLocation = null;
+    let unsubscribeDonations = null;
+
+    // Logout button
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      auth.signOut().then(() => window.location.href = "/");
+    });
 
     // Ensure NGO is logged in
     auth.onAuthStateChanged(async (user) => {
@@ -125,18 +194,14 @@
       } else {
         const userDoc = await db.collection("users").doc(user.uid).get();
         if (userDoc.exists) {
-          currentLocation = userDoc.data().location || null;
-          if (currentLocation) {
-            document.getElementById("locationInput").value = currentLocation;
-            loadDonations(user.uid, currentLocation);
-          } else {
-            alert("Your location is not set. Please update your profile.");
-          }
+          currentLocation = userDoc.data().location || "";
+          document.getElementById("locationInput").value = currentLocation;
+          loadDonations(user.uid, currentLocation);
         }
       }
     });
 
-    // Change location button
+    // Change location
     document.getElementById("changeLocationBtn").addEventListener("click", () => {
       const newLocation = document.getElementById("locationInput").value.trim();
       if (newLocation) {
@@ -145,65 +210,60 @@
       }
     });
 
-    let unsubscribeDonations = null;
+    function loadDonations(ngoId, location) {
+      const container = document.getElementById("donationsContainer");
 
-function loadDonations(ngoId, location) {
-  const container = document.getElementById("donationsContainer");
+      if (unsubscribeDonations) unsubscribeDonations();
 
-  // Detach previous listener
-  if (unsubscribeDonations) unsubscribeDonations();
+      unsubscribeDonations = db.collection("donations")
+        .where("location", "==", location)
+        .orderBy("timestamp", "desc")
+        .onSnapshot(async (snapshot) => {
+          container.innerHTML = "";
+          if (snapshot.empty) {
+            container.innerHTML = "<p class='empty-message'>No donations available in this area.</p>";
+            return;
+          }
 
-  unsubscribeDonations = db.collection("donations")
-    .where("location", "==", location)
-    .orderBy("timestamp", "desc")
-    .onSnapshot(async (snapshot) => {
-      container.innerHTML = "";
+          for (const doc of snapshot.docs) {
+            const donation = doc.data();
+            if (donation.bookedBy && donation.bookedBy !== ngoId) continue;
 
-      if (snapshot.empty) {
-        container.innerHTML = "<p class='empty-message'>No donations available in this area.</p>";
-        return;
-      }
+            let restaurantName = donation.name || "Restaurant";
+            if (donation.userId) {
+              const userDoc = await db.collection("users").doc(donation.userId).get();
+              if (userDoc.exists) restaurantName = userDoc.data().name;
+            }
 
-      for (const doc of snapshot.docs) {
-        const donation = doc.data();
-        if (donation.bookedBy && donation.bookedBy !== ngoId) continue;
+            const item = document.createElement("div");
+            item.className = "donation-item";
 
-        let restaurantName = donation.name || "Restaurant";
-        if (donation.userId) {
-          const userDoc = await db.collection("users").doc(donation.userId).get();
-          if (userDoc.exists) restaurantName = userDoc.data().name;
-        }
+            const info = document.createElement("div");
+            info.innerHTML = `
+              <strong>${restaurantName}</strong> donated 
+              <em>${donation.quantity}</em> servings of <em>${donation.food}</em>
+              <br><small>📍 ${donation.location}</small>
+            `;
 
-        const item = document.createElement("div");
-        item.className = "donation-item";
+            const button = document.createElement("button");
+            button.className = "book-btn";
 
-        const info = document.createElement("div");
-        info.innerHTML = `
-          <strong>${restaurantName}</strong> donated 
-          <em>${donation.quantity}</em> servings of <em>${donation.food}</em>
-          <br><small>📍 ${donation.location}</small>
-        `;
+            if (donation.bookedBy === ngoId) {
+              button.textContent = "✅ Booked";
+              button.disabled = true;
+            } else {
+              button.textContent = "Book Donation";
+              button.addEventListener("click", () => {
+                db.collection("donations").doc(doc.id).update({ bookedBy: ngoId });
+              });
+            }
 
-        const button = document.createElement("button");
-        button.className = "book-btn";
-
-        if (donation.bookedBy === ngoId) {
-          button.textContent = "✅ Booked";
-          button.disabled = true;
-        } else {
-          button.textContent = "Book Donation";
-          button.addEventListener("click", () => {
-            db.collection("donations").doc(doc.id).update({ bookedBy: ngoId });
-          });
-        }
-
-        item.appendChild(info);
-        item.appendChild(button);
-        container.appendChild(item);
-      }
-    });
-}
-
+            item.appendChild(info);
+            item.appendChild(button);
+            container.appendChild(item);
+          }
+        });
+    }
   </script>
 </body>
 </html>

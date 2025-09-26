@@ -8,69 +8,167 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <style>
-    .container {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      padding: 20px;
-      max-width: 900px;
-      margin: auto;
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      height: 100%;
+      background: url('your-background.jpg') no-repeat center center fixed;
+      background-size: cover;
     }
-    .box {
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+
+    /* Navbar - Glassy style */
+    .navbar {
+      width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 1.5rem;
+      background-color: rgba(108, 99, 255, 0.85);
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-radius: 0 0 12px 12px;
+    }
+
+    .navbar h1 {
+      margin: 0;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .logout-container button {
+      padding: 5px 12px;
+      font-size: 0.85rem;
+      background: rgba(255, 255, 255, 0.95);
+      color: #6c63ff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .logout-container button:hover {
       background: #fff;
+      box-shadow: 0 2px 8px rgba(108, 99, 255, 0.4);
+      transform: scale(1.05);
     }
-    .donation-form-section {
-      flex: 1;
-    }
-    .previous-donations-section {
-      flex: 2;
-    }
-    #previousDonationsContainer {
+
+    /* Container */
+    .container {
+      margin-top: 100px; /* space for navbar */
+      max-width: 900px;
+      width: 100%;
+      padding: 0 20px;
       display: flex;
-      flex-direction: column;
-      gap: 10px;
+      flex-wrap: wrap;
+      gap: 20px;
     }
+
+    /* Boxes - keep glassy design */
+    .box {
+      flex: 1 1 400px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 25px 20px;
+      border-radius: 15px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .box:hover {
+      box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+    }
+
+    .box h2 {
+      font-size: 1.6rem;
+      margin-bottom: 15px;
+      color: #2c3e50;
+      text-align: center;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      border: 1.5px solid #d1d9e6;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    button {
+      background: rgba(108, 99, 255, 0.95);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(108, 99, 255, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: rgba(84, 77, 217, 0.95);
+      box-shadow: 0 8px 20px rgba(84, 77, 217, 0.7);
+    }
+
+    .message {
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 10px;
+      font-weight: 600;
+      display: none;
+    }
+
+    .message.success { background: #d4edda; color: #155724; }
+    .message.error { background: #f8d7da; color: #721c24; }
+
     .donation-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #f5f5f5;
-      padding: 12px 16px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #ccc;
       border-radius: 8px;
+      margin-bottom: 8px;
+      background: #fefefe;
     }
-    .donation-item strong {
-      color: #333;
-    }
-    button {
-      padding: 6px 12px;
-      border: none;
+
+    .donation-item button {
+      width: auto;
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      background: rgba(255,0,0,0.8);
+      color: #fff;
       border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
     }
-    button[type="submit"] {
-      background: #4CAF50;
-      color: white;
+
+    .donation-item button:hover {
+      background: rgba(255,0,0,1);
     }
-    .delete-btn {
-      background: #e74c3c;
-      color: white;
-    }
-    .message {
-      margin-top: 10px;
-      font-size: 14px;
-    }
-    .success {
-      color: green;
+
+    @media(max-width: 480px){
+      .navbar h1 { font-size: 1.1rem; }
+      .logout-container button { padding: 4px 10px; font-size: 0.75rem; }
+      .container { flex-direction: column; }
     }
   </style>
 </head>
 <body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <h1>Smart Food Donation</h1>
+    <div class="logout-container">
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <!-- Page content -->
   <div class="container">
-    
     <!-- Donation Form Box -->
     <div class="box donation-form-section">
       <h2>Donate Food 🍲</h2>
@@ -88,112 +186,104 @@
       <h2>Previous Donations 📋</h2>
       <div id="previousDonationsContainer"></div>
     </div>
-
   </div>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBoC0_vjXNiMELhJ1v6pSKHWhyp1gkuwis",
-    authDomain: "hungry-khushi2.firebaseapp.com",
-    projectId: "hungry-khushi2",
-    storageBucket: "hungry-khushi2.appspot.com",
-    messagingSenderId: "36442459641",
-    appId: "1:36442459641:web:97dcc7914f03bab1438128"
-  };
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBoC0_vjXNiMELhJ1v6pSKHWhyp1gkuwis",
+      authDomain: "hungry-khushi2.firebaseapp.com",
+      projectId: "hungry-khushi2",
+      storageBucket: "hungry-khushi2.firebasestorage.app",
+      messagingSenderId: "36442459641",
+      appId: "1:36442459641:web:97dcc7914f03bab1438128"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const restaurantNameInput = document.getElementById('restaurantName');
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-  const restaurantNameInput = document.getElementById('restaurantName');
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      auth.signOut().then(() => { window.location.href = "/"; });
+    });
 
-  // Ensure user is logged in and fetch name
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      db.collection("users").doc(user.uid).get().then(doc => {
-        if (doc.exists) {
-          restaurantNameInput.value = doc.data().name;
-          loadPreviousDonations(user.uid);
-        } else {
-          console.error("No user data found!");
-        }
-      }).catch(err => console.error(err));
-    } else {
-      window.location.href = "/login";
-    }
-  });
-
-  // ✅ Donation submission (with location embedded)
-  document.getElementById('donationForm').addEventListener('submit', async function(e){
-    e.preventDefault();
-    const user = auth.currentUser;
-    if (!user) return;
-
-    try {
-      // get restaurant user profile
-      const userDoc = await db.collection("users").doc(user.uid).get();
-      if (!userDoc.exists) {
-        console.error("User profile not found!");
-        return;
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        db.collection("users").doc(user.uid).get().then(doc => {
+          if (doc.exists) {
+            restaurantNameInput.value = doc.data().name || "Unknown";
+            loadPreviousDonations(user.uid);
+          } else {
+            restaurantNameInput.value = "Unknown";
+          }
+        }).catch(err => console.error(err));
+      } else {
+        window.location.href = "/";
       }
+    });
 
-      const userData = userDoc.data();
+    document.getElementById('donationForm').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user) return;
 
-      const name = this.name.value.trim();
-      const food = this.food.value.trim();
-      const quantity = Number(this.quantity.value);
+      try {
+        const userDoc = await db.collection("users").doc(user.uid).get();
+        if (!userDoc.exists) return;
+        const userData = userDoc.data();
+        const name = this.name.value.trim();
+        const food = this.food.value.trim();
+        const quantity = Number(this.quantity.value);
 
-      await db.collection("donations").add({
-        name: name,
-        food: food,
-        quantity: quantity,
-        location: userData.location,   // ✅ embed location here
-        timestamp: new Date(),
-        userId: user.uid
-      });
-
-      document.getElementById('responseMessage').textContent = "✅ Donation recorded!";
-      document.getElementById('responseMessage').className = "message success";
-      this.reset();
-      restaurantNameInput.value = name;
-    } catch (err) {
-      console.error(err);
-    }
-  });
-
-  // Load previous donations of logged-in restaurant
-  function loadPreviousDonations(userId) {
-    db.collection("donations")
-      .where("userId", "==", userId)
-      .orderBy("timestamp", "desc")
-      .onSnapshot(snapshot => {
-        const container = document.getElementById("previousDonationsContainer");
-        container.innerHTML = "";
-        if (snapshot.empty) {
-          container.innerHTML = "<p>No previous donations found.</p>";
-          return;
-        }
-
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const item = document.createElement("div");
-          item.className = "donation-item";
-          item.innerHTML = `
-            <div>
-              <strong>${data.food}</strong> - ${data.quantity} servings
-              <br><small>${data.timestamp.toDate().toLocaleString()}</small>
-              <br><em>📍 ${data.location || "No location"}</em>
-            </div>
-            <button class="delete-btn" onclick="deleteDonation('${doc.id}')">🗑️ Delete</button>
-          `;
-          container.appendChild(item);
+        await db.collection("donations").add({
+          name, food, quantity,
+          location: userData.location || "No location",
+          timestamp: new Date(),
+          userId: user.uid
         });
-      });
-  }
 
-  // Delete donation
-  function deleteDonation(docId) {
-    db.collection("donations").doc(docId).delete().catch(err => console.error(err));
-  }
-</script>
+        const msg = document.getElementById('responseMessage');
+        msg.textContent = "✅ Donation recorded!";
+        msg.className = "message success";
+        msg.style.display = "block";
+
+        this.reset();
+        restaurantNameInput.value = name;
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    function loadPreviousDonations(userId) {
+      db.collection("donations")
+        .where("userId", "==", userId)
+        .orderBy("timestamp", "desc")
+        .onSnapshot(snapshot => {
+          const container = document.getElementById("previousDonationsContainer");
+          container.innerHTML = "";
+          if (snapshot.empty) {
+            container.innerHTML = "<p>No previous donations found.</p>";
+            return;
+          }
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const item = document.createElement("div");
+            item.className = "donation-item";
+            item.innerHTML = `
+              <div>
+                <strong>${data.food}</strong> - ${data.quantity} servings
+                <br><small>${data.timestamp.toDate().toLocaleString()}</small>
+                <br><em>📍 ${data.location}</em>
+              </div>
+              <button onclick="deleteDonation('${doc.id}')">🗑️ Delete</button>
+            `;
+            container.appendChild(item);
+          });
+        });
+    }
+
+    function deleteDonation(docId) {
+      db.collection("donations").doc(docId).delete().catch(err => console.error(err));
+    }
+  </script>
 </body>
 </html>

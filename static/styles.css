@@ -100,21 +100,20 @@ input[type="number"]:focus {
 
 button {
   padding: 14px 18px;
-  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  background: rgba(108, 99, 255, 0.95); /* homepage color */
   border: none;
   border-radius: 10px;
   font-size: 1.1rem;
   color: white;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 6px 15px rgba(39, 174, 96, 0.5);
-  transition: background 0.3s ease, box-shadow 0.3s ease;
-  user-select: none;
+  box-shadow: 0 6px 15px rgba(108, 99, 255, 0.5);
+  transition: all 0.3s ease;
 }
 
 button:hover {
-  background: linear-gradient(135deg, #2ecc71, #27ae60);
-  box-shadow: 0 8px 20px rgba(39, 174, 96, 0.7);
+  background: rgba(84, 77, 217, 0.95); /* slightly darker on hover */
+  box-shadow: 0 8px 20px rgba(84, 77, 217, 0.7);
 }
 
 button:active {

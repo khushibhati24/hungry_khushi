@@ -10,6 +10,138 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <!-- Firebase Firestore SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+    }
+
+    .auth-container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 700px;
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn { from {opacity:0; transform: translateY(20px);} to {opacity:1; transform: translateY(0);} }
+
+    h2 { text-align: center; font-size: 2rem; color: #333; margin-bottom: 0.5rem; }
+    .subtitle { text-align: center; font-size: 0.95rem; color: #666; margin-bottom: 2rem; }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-group input,
+    .input-group select {
+      width: 100%;
+      padding: 0.9rem 1rem;
+      border-radius: 10px;
+      border: 1.5px solid #ccc;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus {
+      border-color: #6c63ff;
+      box-shadow: 0 0 5px rgba(108,99,255,0.3);
+    }
+
+    .input-group label {
+      position: absolute;
+      top: 50%;
+      left: 1rem;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 0.9rem;
+      pointer-events: none;
+      transition: 0.3s ease;
+      background: #fff;
+      padding: 0 4px;
+    }
+
+    .input-group input:focus + label,
+    .input-group input:not(:placeholder-shown) + label,
+    .input-group select:focus + label,
+    .input-group select:not([value=""]) + label {
+      top: -8px;
+      left: 10px;
+      font-size: 0.75rem;
+      color: #6c63ff;
+    }
+
+    .password-wrapper .toggle-password {
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #666;
+      transition: color 0.3s ease;
+    }
+
+    .password-wrapper .toggle-password:hover {
+      color: #6c63ff;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.9rem;
+      border: none;
+      border-radius: 10px;
+      background-color: rgba(108, 99, 255, 0.95);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover { background-color: #5750d4; transform: scale(1.03); }
+
+    .message {
+      display: none;
+      text-align: center;
+      margin-top: 1rem;
+      padding: 0.6rem;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+
+    .message.success { background-color: #d4edda; color: #155724; }
+    .message.error { background-color: #f8d7da; color: #721c24; }
+
+    .signup-text {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 1.5rem;
+    }
+
+    .signup-text a {
+      color: #6c63ff;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .signup-text a:hover { text-decoration: underline; }
+
+    @media(max-width:480px){
+      .auth-container { padding: 2rem 1rem; }
+      h2 { font-size: 1.6rem; }
+    }
+  </style>
 </head>
 <body>
   <div class="auth-container">
@@ -32,7 +164,6 @@
         <label for="location">Location</label>
       </div>
 
-      <!-- ✅ Optional Full Address field -->
       <div class="input-group">
         <input type="text" id="full_address" name="full_address" placeholder=" ">
         <label for="full_address">Full Address (optional)</label>
@@ -65,12 +196,11 @@
     <div class="message" id="signupMessage"></div>
 
     <p class="signup-text">
-      Already have an account? <a href="/">Login</a>
+      Already have an account? <a href="/login">Login</a>
     </p>
   </div>
 
   <script>
-    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBoC0_vjXNiMELhJ1v6pSKHWhyp1gkuwis",
       authDomain: "hungry-khushi2.firebaseapp.com",
@@ -80,18 +210,15 @@
       appId: "1:36442459641:web:97dcc7914f03bab1438128"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Toggle password visibility
     function togglePassword(fieldId) {
       const passField = document.getElementById(fieldId);
       passField.type = passField.type === "password" ? "text" : "password";
     }
 
-    // Signup form submission
     const signupForm = document.getElementById("signupForm");
     const signupMessage = document.getElementById("signupMessage");
 
@@ -115,21 +242,12 @@
       }
 
       try {
+        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const uid = userCredential.user.uid;
 
-        // Save user data in Firestore
-        const userData = {
-          name: name,
-          email: email,
-          location: location,
-          role: role
-        };
-
-        // only add full address if provided
-        if (fullAddress) {
-          userData.full_address = fullAddress;
-        }
+        const userData = { name, email, location, role };
+        if(fullAddress) userData.full_address = fullAddress;
 
         await db.collection("users").doc(uid).set(userData);
 
@@ -137,10 +255,7 @@
         signupMessage.className = "message success";
         signupMessage.style.display = "block";
 
-        // Redirect to main page
-        setTimeout(() => {
-          window.location.href = "http://localhost:5000";
-        }, 1500);
+        setTimeout(() => { window.location.href = "/"; }, 1500);
       } catch (error) {
         signupMessage.textContent = error.message;
         signupMessage.className = "message error";
